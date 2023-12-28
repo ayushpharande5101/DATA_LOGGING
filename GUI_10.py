@@ -332,19 +332,6 @@ save_frame = tk.Frame(toolBar_frame)
 save_frame.config(bg="#d5dfed", bd=5)
 save_frame.pack(fill=Y, side=RIGHT)
 
-
-def save_to_pdf():
-    # Take a screenshot of the table
-    table_img = ImageGrab.grab(bbox=(table.winfo_rootx(), table.winfo_rooty(),
-                                     table.winfo_rootx() + table.winfo_width(),
-                                     table.winfo_rooty() + table.winfo_height()))
-
-    # Save the screenshot as a PDF
-    filepath = filedialog.asksaveasfilename(defaultextension=".pdf")
-    if filepath:
-        table_img.save(filepath, "PDF", resolution=100.0)
-
-
 def savefile():
     try:
         data = []
@@ -417,5 +404,61 @@ table.heading("Cycle Time", text="Cycle Time")
 table.heading("Glue Weight", text="Glue Weight")
 
 table.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+def truncate_string(s, max_length):
+    if len(s) > max_length:
+        return s[:max_length - 3] + '...'
+    else:
+        return s
+
+def generate_pdf():
+    global table
+    pdf_filename = filedialog.asksaveasfilename(defaultextension=".pdf")
+    pdf = SimpleDocTemplate(pdf_filename, pagesize=A3)
+    pdf_n =FPDF()
+    elements = []
+
+    # Get table data
+    table_data = []
+    headings = ['Sr.no', 'DateTime', 'User', 'Operational Shift', 'Station Name', 'Process Name', 'Battery ID',
+                'Cycle Time', 'Glue Weight']
+    table_data.append(headings)
+
+    for item in table.get_children():
+        values = [truncate_string(table.item(item, 'values')[0], 20),
+                  truncate_string(table.item(item, 'values')[1], 20),
+                  truncate_string(table.item(item, 'values')[2], 20),
+                  truncate_string(table.item(item, 'values')[3], 20),
+                  truncate_string(table.item(item, 'values')[4], 20),
+                  truncate_string(table.item(item, 'values')[5], 20),
+                  truncate_string(table.item(item, 'values')[6], 20),
+                  truncate_string(table.item(item, 'values')[7], 20),
+                  truncate_string(table.item(item, 'values')[8], 20)]
+
+        table_data.append(values)
+
+    # Calculate column widths based on content
+    col_widths = [max(len(str(row[i])) for row in table_data) * 30 for i in range(len(headings))]
+
+    # Define the table style with adjusted column widths
+    style = TableStyle([
+                           ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                           ('FONTNAME', (0, 0), (-1, 0), 'Times-Bold'),
+                           ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                           ('BACKGROUND', (0, 1), (-1, -1), '#d5dfed'),
+                           ('GRID', (0, 0), (-1, -1), 1, '#000000')
+                       ] + [('WIDTH', (i, 0), (i, -1), col_widths[i]) for i in range(len(headings))])
+
+    # Create a Table object and apply the style
+    table = Table(table_data)
+    table.setStyle(style)
+    elements.append(Table(table_data, style=style, hAlign='CENTER'))
+
+    # Build the PDF document
+    pdf.build(elements)
+
+
+pdf_f = tk.Button(save_frame, text='save as pdf', command=generate_pdf)
+pdf_f.grid(row=0, column=8, padx=10, pady=10)
 
 root.mainloop()
