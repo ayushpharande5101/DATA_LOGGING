@@ -1,19 +1,17 @@
-from tkinter import *
 import tkinter as tk
 from _datetime import datetime
-import numpy as np
 from tkinter import *
 import pandas as pd
 import pyodbc
-from reportlab.lib.pagesizes import A3
 from PIL import ImageTk
 from tkinter import ttk
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
-from reportlab.platypus import Table
-from reportlab.platypus import SimpleDocTemplate
 from tkcalendar import DateEntry
 from tkinter import filedialog
 import os
+from reportlab.lib.pagesizes import A3
+from reportlab.platypus import Image as ReportlabImage
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image
+
 
 script_dir = os.path.dirname(__file__)
 
@@ -411,10 +409,21 @@ def truncate_string(s, max_length):
         return s
 
 def generate_pdf():
+
     global table
     pdf_filename = filedialog.asksaveasfilename(defaultextension=".pdf")
     pdf = SimpleDocTemplate(pdf_filename, pagesize=A3)
     elements = []
+
+
+    logo_image = os.path.join(script_dir, 'CTPL', 'CTPL2.png')
+    # logo_image = logo_image.resize((200, 200), Image.ANTIALIAS)
+
+    # Convert the image to a format that ReportLab can use
+    logo_reportlab_image = ReportlabImage(logo_image)
+
+    # Add the logo image to the PDF document
+    elements.append(logo_reportlab_image)
 
     # Get table data
     table_data = []
@@ -454,7 +463,6 @@ def generate_pdf():
 
     # Build the PDF document
     pdf.build(elements)
-
 
 pdf_f = tk.Button(save_frame, text='save as pdf', command=generate_pdf)
 pdf_f.grid(row=0, column=8, padx=10, pady=10)
