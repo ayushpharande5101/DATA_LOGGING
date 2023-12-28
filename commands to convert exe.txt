@@ -1,0 +1,10 @@
+To convert py into exe 
+
+--> pyinstaller --name GUI_8 --onefile --windowed --icon=icon.ico -F --hidden-import "babel.numbers" GUI_8.py
+
+
+__________________________________________________________________________________________________________________________________________________________________________
+
+To Install Python Libraries
+
+--> pip install -r requirements.txt
