@@ -1,17 +1,19 @@
 from tkinter import *
-from tkinter import ttk
 import tkinter as tk
 from _datetime import datetime
+import numpy as np
+from tkinter import *
 import pandas as pd
 import pyodbc
+from reportlab.lib.pagesizes import A3
 from PIL import ImageTk
+from tkinter import ttk
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.platypus import Table
+from reportlab.platypus import SimpleDocTemplate
 from tkcalendar import DateEntry
 from tkinter import filedialog
-from PIL import ImageGrab
 import os
-import tkinter as tk
-from datetime import datetime
-from tkinter import PhotoImage, Image, X, RAISED
 
 script_dir = os.path.dirname(__file__)
 
@@ -54,14 +56,13 @@ def connection():
 # creating Table in Database
 conn = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server};'
                       'Server= AYUSHP-DELL\\SQLEXPRESS03;'
-                      'Database = TAPR102_1;'
                       'Trusted_Connection=yes;')
 
 cursor = conn.cursor()
 
 # Define the SQL command to create a table
 table_exists_query = ("IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Data_Log1') "
-                      "CREATE TABLE Data_Log1 (DateTime DATETIME PRIMARY KEY, [User] NVARCHAR(50), [Operational Shift] NVARCHAR(50),"
+                      "CREATE TABLE Data_Log1 (DateTime DATETIME , [User] NVARCHAR(50), [Operational Shift] NVARCHAR(50),"
                       " [Station Name] NVARCHAR(50), [Process Name] NVARCHAR(50), [Battery ID] NVARCHAR(50), "
                       "[Cycle Time] INT, [Glue Weight] FLOAT  );")
 
@@ -356,8 +357,6 @@ def savefile():
 button = tk.Button(save_frame, text='Save', command=savefile)
 button.grid(row=0, column=7, padx=10, pady=10)
 
-pdf_f = tk.Button(save_frame, text='save as pdf', command=save_to_pdf)
-pdf_f.grid(row=0, column=8, padx=10, pady=10)
 # ================================================================================================================
 
 table_frame = tk.LabelFrame(root, width=5000, height=5000, text="Module Report", font=('Times New Roman', 20, 'bold'))
@@ -415,7 +414,6 @@ def generate_pdf():
     global table
     pdf_filename = filedialog.asksaveasfilename(defaultextension=".pdf")
     pdf = SimpleDocTemplate(pdf_filename, pagesize=A3)
-    pdf_n =FPDF()
     elements = []
 
     # Get table data
