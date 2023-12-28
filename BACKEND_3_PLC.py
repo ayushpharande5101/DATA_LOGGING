@@ -88,7 +88,6 @@ def binary_to_float_ieee754(binary_string):
 # DATABASE CONNECTION
 connection = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server};'
                         'Server= AYUSHP-DELL\\SQLEXPRESS03;'
-                        'Database = TAPR102_1;'
                         'Trusted_Connection=yes;')
 
 if connection:
@@ -99,7 +98,7 @@ else:
 cursor = connection.cursor()
 
 table_exists_query = ("IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Data_Log1') "
-                      "CREATE TABLE Data_Log1 (DateTime DATETIME PRIMARY KEY, [User] NVARCHAR(50), [Operational Shift] NVARCHAR(50),"
+                      "CREATE TABLE Data_Log1 (DateTime DATETIME, [User] NVARCHAR(50), [Operational Shift] NVARCHAR(50),"
                       " [Station Name] NVARCHAR(50), [Process Name] NVARCHAR(50), [Battery ID] NVARCHAR(50), "
                       "[Cycle Time] INT, [Glue Weight] FLOAT  );")
 
