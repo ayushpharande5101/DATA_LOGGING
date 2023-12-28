@@ -417,7 +417,7 @@ def generate_pdf():
 
 
     logo_image = os.path.join(script_dir, 'CTPL', 'CTPL2.png')
-    # logo_image = logo_image.resize((200, 200), Image.ANTIALIAS)
+    #logo_image = logo_image.resize((200, 200), Image.ANTIALIAS)
 
     # Convert the image to a format that ReportLab can use
     logo_reportlab_image = ReportlabImage(logo_image)
