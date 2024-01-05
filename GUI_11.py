@@ -1,88 +1,77 @@
 import tkinter as tk
-from datetime import datetime
+from _datetime import datetime
 from tkinter import *
+import openpyxl
 import pandas as pd
 import pyodbc
-from PIL import ImageTk
 from tkinter import ttk
-from tkcalendar import DateEntry
-from tkinter import filedialog
-import os
-import openpyxl
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import Font
+from tkcalendar import DateEntry
+from tkinter import filedialog
+from reportlab.lib.pagesizes import A3
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph
 from reportlab.platypus import Image
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.pagesizes import A3
-from reportlab.platypus import Image as ReportlabImage
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image
-
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from tkinter import PhotoImage
+import os
 
 script_dir = os.path.dirname(__file__)
-
+# window creation
 root = tk.Tk()
-root.geometry("800x685")
-current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-root.title(f"Material Handling - {current_time}")
-
-# Creating the logo on the window
+root.geometry("800x685")  # window size to be displayed
+current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Adding Date and Time to the window root
+root.title(f"Material Handling- {current_time}")  # window title
+# creating the logo on the window
 logo_path = os.path.join(script_dir, 'CTPL', 'CTPL2.png')
 root.iconphoto(True, PhotoImage(file=logo_path))
 
-# Creating the first Frame on the window
+# root.config(bg='#586be8')
+# ========================================================================================
+# creating the first Frame on the window
 view_bar_frame = tk.Frame(root, width=5000, height=600)
 view_bar_frame.pack(fill=X, padx=10, pady=10)
 view_bar_frame.config(bg="#b0bed1", relief=RAISED, bd=5)
 
-# Creating a logo inside a Frame
-logo_img = ImageTk.PhotoImage(file=logo_path)
+# creating a logo inside a Frame
+logo_img = PhotoImage(file=os.path.join(script_dir, 'CTPL', 'CTPL2.png'))
+
+# Create the label using the PhotoImage object
 logo_w = tk.Label(view_bar_frame, image=logo_img)
+
+# To prevent the PhotoImage object from being garbage collected, keep an additional reference to it
 logo_w.image = logo_img
+
 logo_w.config(bg="#b0bed1")
-logo_w.pack(side=tk.LEFT)
+logo_w.pack(side=LEFT)
 # ------------------------------------------------------------------------------------
 # creating a Frame inside the view_bar_frame for View Report and Refresh button
 generate = tk.Frame(view_bar_frame, width=500, height=600)
 generate.pack(side=RIGHT, fill=Y)
 generate.config(bg="#d5dfed")
+Date_Time = datetime.now()
 
-# -----------------------------------------------------------------------------------
+
+# def connection():
+#     conn_str = 'DSN=SQL2;UID='';PWD='''  # connection with your SQL Server
+#     conn = pyodbc.connect(conn_str)
+#     return conn
 
 def connection():
     conn = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server};'
-                          'Server= AYUSHP-DELL\\SQLEXPRESS03;'
-                          'Database = TAPR102_1;'
-                          'Trusted_Connection=yes;')
+                                'Server= AYUSHP-DELL\\SQLEXPRESS03;'
+                                'Trusted_Connection=yes;')
 
-    return conn
+    cursor = conn.cursor()
+    return cursor
 
-
-# ------------------------------------------------------------------------------------
-# creating Table in Database
-conn = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server};'
-                      'Server= AYUSHP-DELL\\SQLEXPRESS03;'
-                      'Trusted_Connection=yes;')
-
-cursor = conn.cursor()
-
-# Define the SQL command to create a table
-# table_exists_query = ("IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Data_Log1') "
-#                       "CREATE TABLE Data_Log1 (DateTime DATETIME , [User] NVARCHAR(50), [Operational Shift] NVARCHAR(50),"
-#                       " [Station Name] NVARCHAR(50), [Process Name] NVARCHAR(50), [Battery ID] NVARCHAR(50), "
-#                       "[Cycle Time] INT, [Glue Weight] FLOAT  );")
-#
-# cursor.execute(table_exists_query)
-
-# Commit the changes and close the connection
-conn.commit()
-conn.close()
-
-# -----------------------------------------------------------------------------------------------------------------
 
 # creating a function to remove displayed in the table
+
 def refresh_frames():
+    global table
     # Clear table content
     for row in table.get_children():
         table.delete(row)
@@ -94,6 +83,7 @@ def refresh_frames():
     # Clear battery ID entry
     battery_id_entry.delete(0, tk.END)
     var.set(0)
+
 
 # creating the view() function to display the combined results in the table
 def view():
@@ -116,7 +106,7 @@ def view():
         battery_id_val = battery_id_entry.get()
 
         sql = "SELECT * FROM TAPR102_1.dbo.Table_1 WHERE [Battery ID] = ?"
-        cursor = conn.execute(sql, battery_id_val)
+        cursor = connection().execute(sql, battery_id_val)
         rows = cursor.fetchall()
         for row in rows:
             date_time = row[0].strftime('%Y-%m-%d %H:%M:%S')
@@ -125,6 +115,7 @@ def view():
         root.update_idletasks()
     else:
         pass
+
 
 # creating a button called refresh inside the Frame generate
 refresh_button = tk.Button(generate, text='Refresh', command=refresh_frames)
@@ -144,6 +135,7 @@ view_report.pack(fill=Y, side=LEFT)
 # crating a tk.Intvar() variable for radiobuttons Option1 and Option2 i.e. Date Time and Battery ID
 var = tk.IntVar()
 
+
 # Function for condition to select and deselect the radiobuttons
 def datetime():
     if var.get() == 1:
@@ -160,6 +152,7 @@ def datetime():
         battery_id_entry.grid_forget()
         space2.grid_forget()
 
+
 def Id():
     if var.get() == 2:
         battery_id.grid(row=1, column=1)
@@ -175,13 +168,14 @@ def Id():
         end_date_entry.grid_forget()
         space1.grid_forget()
 
+
 def Foam_Module():
     serial_number = 1
 
     if var.get() == 1:  # Filtering by date range
         start = start_date_entry.get_date().strftime('%Y-%m-%d')
         end = end_date_entry.get_date().strftime('%Y-%m-%d')
-        sql = "SELECT * master.dbo.Data_Log1 WHERE [Process Name]='Foam Module' AND DateTime BETWEEN ? AND ?"
+        sql = "SELECT * FROM TAPR102_1.dbo.Table_1 WHERE [Process Name]='Foam Module' AND DateTime BETWEEN ? AND ?"
         cursor = connection().execute(sql, (start, end))
         rows = cursor.fetchall()
         for row in rows:
@@ -193,7 +187,7 @@ def Foam_Module():
     elif var.get() == 2:  # Filtering by battery ID
         battery_id_val = battery_id_entry.get()
 
-        sql = "SELECT * FROM master.dbo.Data_Log1 WHERE [Process Name]='Foam Module' AND [Battery ID] = ?"
+        sql = "SELECT * FROM TAPR102_1.dbo.Table_1 WHERE [Process Name]='Foam Module' AND [Battery ID] = ?"
         cursor = connection().execute(sql, battery_id_val)
         rows = cursor.fetchall()
         for row in rows:
@@ -201,8 +195,10 @@ def Foam_Module():
             table.insert(parent='', index=tk.END, iid=None, values=[serial_number, date_time] + list(row[1:]))
             serial_number += 1  # Increment serial number for each row
         root.update_idletasks()
+
     else:
         pass
+
 
 def Gap_Filling():
     serial_number = 1
@@ -211,7 +207,7 @@ def Gap_Filling():
         start = start_date_entry.get_date().strftime('%Y-%m-%d')
         end = end_date_entry.get_date().strftime('%Y-%m-%d')
 
-        sql = "SELECT * FROM master.dbo.Data_Log1 WHERE [Process Name]='Gap Filling' AND DateTime BETWEEN ? AND ?"
+        sql = "SELECT * FROM TAPR102_1.dbo.Table_1 WHERE [Process Name]='Gap Filling' AND DateTime BETWEEN ? AND ?"
         cursor = connection().execute(sql, (start, end))
         rows = cursor.fetchall()
         for row in rows:
@@ -223,7 +219,7 @@ def Gap_Filling():
     elif var.get() == 2:  # Filtering by battery ID
         battery_id_val = battery_id_entry.get()
 
-        sql = "SELECT * FROM master.dbo.Data_Log1 WHERE [Process Name]='Gap Filling' AND [Battery ID] = ?"
+        sql = "SELECT * FROM TAPR102_1.dbo.Table_1 WHERE [Process Name]='Gap Filling' AND [Battery ID] = ?"
         cursor = connection().execute(sql, battery_id_val)
         rows = cursor.fetchall()
         for row in rows:
@@ -234,6 +230,7 @@ def Gap_Filling():
 
     else:
         pass
+
 
 def Foam_Encloser():
     serial_number = 1
@@ -242,7 +239,7 @@ def Foam_Encloser():
         start = start_date_entry.get_date().strftime('%Y-%m-%d')
         end = end_date_entry.get_date().strftime('%Y-%m-%d')
 
-        sql = "SELECT * FROM master.dbo.Data_Log1 WHERE [Process Name]='Foam Encloser' AND DateTime BETWEEN ? AND ?"
+        sql = "SELECT * FROM TAPR102_1.dbo.Table_1 WHERE [Process Name]='Foam Encloser' AND DateTime BETWEEN ? AND ?"
         cursor = connection().execute(sql, (start, end))
         rows = cursor.fetchall()
         for row in rows:
@@ -254,7 +251,7 @@ def Foam_Encloser():
     elif var.get() == 2:  # Filtering by battery ID
         battery_id_val = battery_id_entry.get()
 
-        sql = "SELECT * FROM master.dbo.Data_Log1 WHERE [Process Name]='Foam Encloser' AND [Battery ID] = ?"
+        sql = "SELECT * FROM TAPR102_1.dbo.Table_1 WHERE [Process Name]='Foam Encloser' AND [Battery ID] = ?"
         cursor = connection().execute(sql, battery_id_val)
         rows = cursor.fetchall()
         for row in rows:
@@ -262,8 +259,10 @@ def Foam_Encloser():
             table.insert(parent='', index=tk.END, iid=None, values=[serial_number, date_time] + list(row[1:]))
             serial_number += 1  # Increment serial number for each row
         root.update_idletasks()
+
     else:
         pass
+
 
 Var1 = IntVar()
 
@@ -284,8 +283,10 @@ button4.grid(row=0, column=6, padx=10, pady=10)
 button4.configure(variable=Var1)
 button4.select()
 
+
 def clear_data():
     table.delete(*table.get_children())
+
 
 def view_button():
     clear_data()
@@ -347,7 +348,7 @@ def table_info():
         text1 = "Process Name : Foam Encloser"
         return text1
     elif Var1.get() == 4:
-        text1 = "Process Name : All Data "
+        text1 = "Process Name : Foam Module, Gap Filling, Foam Encloser"
         return text1
 
 
@@ -388,8 +389,8 @@ def About_data():
 
 def savefile():
     try:
-        global current_time
-        current_t = current_time
+        global Date_Time
+        current_t = Date_Time
         # Extract the hour, minute, and second
         hour = current_t.hour
         minute = current_t.minute
@@ -423,7 +424,7 @@ def savefile():
         sheet['A7'] = "  "
 
         # Add logo and text to the Excel sheet
-        logo = os.path.join(script_dir, 'CTPL', 'CTPL2.png')
+        logo = openpyxl.drawing.image.Image("C:/Users/Ayush Pharande/Downloads/CTPL2.png")
         sheet.add_image(logo, 'A1')
         sheet['A5'] = f"Material Handling Report - {current_time_str}"
 
@@ -443,14 +444,17 @@ def savefile():
 
 save_menu.add_command(label="Excel Sheet", command=savefile)
 save_menu.add_separator()
+
 # ================================================================================================================
 
-table_frame = tk.LabelFrame(root, width=5000, height=5000, text="Module Report", font=('Times New Roman', 20, 'bold'))
+table_frame = tk.LabelFrame(root, width=5000, height=5000, text="Module Report",
+                            font=('Helvetica New Roman', 20, 'bold'))
 table_frame.config(relief=GROOVE, bd=5)
 table_frame.pack(padx=10, fill=BOTH)
 
-# table_name=tk.Label(table_frame, text="Module Report", font=('Times New Roman',20, 'bold'))
+# table_name=tk.Label(table_frame, text="Module Report", font=('Helvetica New Roman',20, 'bold'))
 # table_name.pack()
+
 # ---------------------------------------------------------------------------------------------------------
 
 table = ttk.Treeview(table_frame, columns=(
@@ -489,6 +493,8 @@ table.heading("Glue Weight", text="Glue Weight")
 
 table.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
+
+# To the Table Name
 
 def truncate_string(string, max_length):
     if string is None:
@@ -561,15 +567,15 @@ def generate_pdf():
         table_data.append(headings)
 
         for item in table.get_children():
-            values = [truncate_string(table.item(item, 'values')[0], 20),
-                      truncate_string(table.item(item, 'values')[1], 20),
-                      truncate_string(table.item(item, 'values')[2], 20),
-                      truncate_string(table.item(item, 'values')[3], 20),
-                      truncate_string(table.item(item, 'values')[4], 20),
-                      truncate_string(table.item(item, 'values')[5], 20),
-                      truncate_string(table.item(item, 'values')[6], 20),
-                      truncate_string(table.item(item, 'values')[7], 20),
-                      truncate_string(table.item(item, 'values')[8], 20)]
+            values = [str(table.item(item, 'values')[0]),
+                      str(table.item(item, 'values')[1]),
+                      str(table.item(item, 'values')[2]),
+                      str(table.item(item, 'values')[3]),
+                      str(table.item(item, 'values')[4]),
+                      str(table.item(item, 'values')[5]),
+                      str(table.item(item, 'values')[6]),
+                      str(table.item(item, 'values')[7]),
+                      str(table.item(item, 'values')[8])]
 
             table_data.append(values)
 
