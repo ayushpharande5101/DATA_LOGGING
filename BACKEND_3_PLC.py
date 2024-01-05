@@ -97,12 +97,12 @@ else:
 
 cursor = connection.cursor()
 
-table_exists_query = ("IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Data_Log1') "
-                      "CREATE TABLE Data_Log1 (DateTime DATETIME, [User] NVARCHAR(50), [Operational Shift] NVARCHAR(50),"
-                      " [Station Name] NVARCHAR(50), [Process Name] NVARCHAR(50), [Battery ID] NVARCHAR(50), "
-                      "[Cycle Time] INT, [Glue Weight] FLOAT  );")
-
-cursor.execute(table_exists_query)
+# table_exists_query = ("IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Data_Log1') "
+#                       "CREATE TABLE Data_Log1 (DateTime DATETIME, [User] NVARCHAR(50), [Operational Shift] NVARCHAR(50),"
+#                       " [Station Name] NVARCHAR(50), [Process Name] NVARCHAR(50), [Battery ID] NVARCHAR(50), "
+#                       "[Cycle Time] INT, [Glue Weight] FLOAT  );")
+#
+# cursor.execute(table_exists_query)
 
 #---------------------------------------------------------------------------------------------------------------------
 # MODBUS SERVER CONNECTION
@@ -186,7 +186,7 @@ while True:
             # print(CYCLE_TIME)
 
 
-            table_name = 'master.dbo.Data_Log1'
+            table_name = 'TAPR102_1.dbo.Table_1'
 
             columns = ['DateTime','[User]', '[Operational Shift]', '[Station Name]', '[Process Name]', '[Battery ID]',
                        '[Cycle Time]', '[Glue Weight]']
@@ -199,7 +199,7 @@ while True:
 
             print(b1)
 
-            time.sleep(2)
+            time.sleep(1)
             if f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES (?,?,?,?,?,?,?,?)":
                 print("Data Entered Successfully")
                 client.write_registers(0, 0)
@@ -279,7 +279,7 @@ while True:
                 # print(b1)
                 # print(CYCLE_TIME)
 
-                table_name = 'master.dbo.Data_Log1'
+                table_name = 'TAPR102_1.dbo.Table_1'
 
                 columns = ['DateTime', '[User]', '[Operational Shift]', '[Station Name]', '[Process Name]',
                            '[Battery ID]',
@@ -292,7 +292,7 @@ while True:
 
                 cursor.execute(SQLCommand, values)
 
-                time.sleep(2)
+                time.sleep(1)
                 if f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES (?,?,?,?,?,?,?,?)":
                     print("Data Entered Successfully")
                     client.write_registers(200, 0)
@@ -373,7 +373,7 @@ while True:
                 # print(b1)
                 # print(CYCLE_TIME)
 
-                table_name = 'master.dbo.Data_Log1'
+                table_name = 'TAPR102_1.dbo.Table_1'
 
                 columns = ['DateTime', '[User]', '[Operational Shift]', '[Station Name]', '[Process Name]',
                            '[Battery ID]',
@@ -386,7 +386,7 @@ while True:
 
                 cursor.execute(SQLCommand, values)
 
-                time.sleep(2)
+                time.sleep(1)
                 if f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES (?,?,?,?,?,?,?,?)":
                     print("Data Entered Successfully")
                     client.write_registers(400, 0)
